@@ -4,7 +4,9 @@ This repo will hold templates and guides for our day 2 stack. We'll see if it's 
 This guide details manual deployment in-line here, but we also have a Pulumi script that does this.
 You can simply run `go run main.go` to deploy all the things
 
-TODO: everything is in default ns right now.
+## TL;DR
+
+To get things installed, you should edit `config/config.yaml`, then run `go run main.go`.
 
 ## Monitoring and Logging
 
@@ -12,15 +14,7 @@ For monitoring and logging, we will recommend using a combination of Loki, Grafa
 
 The deployment of all of these tools can be done "all-in-one" with Helm via the Loki charts.
 
-To deploy:
-
-```bash
-helm repo add grafana https://grafana.github.io/helm-charts
-
-helm repo update
-
-helm upgrade --install loki --namespace loki grafana/loki-stack -f loki/values.yaml
-```
+Chart location: https://grafana.github.io/helm-charts (specifically they loki-stack)
 
 ### Notes and TODOs
 
@@ -33,15 +27,7 @@ For load balancing, we'll recommend that clients use the "built-in" for their cl
 
 In the case of mixed envrionments or bare metal, we'll recommend MetalLB.
 
-To deploy MetalLB:
-
-```bash
-helm repo add metallb https://metallb.github.io/metallb
-
-helm repo update
-
-helm upgrade --install metallb --namespace metallb metallb/metallb -f metallb/values.yaml
-```
+Chart location: https://metallb.github.io/metallb
 
 ### Notes
 
@@ -49,35 +35,22 @@ helm upgrade --install metallb --namespace metallb metallb/metallb -f metallb/va
 
 ## Ingress
 
-For Ingress, we'll recommend the NGINX ingress controller, as it seems to be the most standard option in the community. To deploy:
+For Ingress, we'll recommend the NGINX ingress controller, as it seems to be the most standard option in the community.
 
-```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+Chart location: https://kubernetes.github.io/ingress-nginx
 
-helm repo update
-
-helm upgrade --install ingress-nginx --namespace ingress ingress-nginx/ingress-nginx
-```
-
-By default, this will create an ingress service of type LoadBalancer and should immediately be reachable via that IP/DNS name once everything is online.
+By default, this will create an ingress service of type LoadBalancer (thus has some dependency on the LB section above) and should immediately be reachable via that IP/DNS name once everything is online.
 
 ### Notes and TODOs
 
 - Document how to hook this into cert-manager
-
 ## SSL Certificates
 
 For generating certs that can be used with Kubernetes applications, we recommend `cert-manager`.
 Using cert-manager should let us hook into a variety of sources like Let's Encrypt, Vault, plus others.
 We'll need to document each source as we encounter it and need to set it up.
 
-```bash
-helm repo add cert-manager https://charts.jetstack.io
-
-helm repo update
-
-helm upgrade --install cert-manager --namespace cert-manager cert-manager/cert-manager -f cert-manager/values.yaml
-```
+Chart location: https://charts.jetstack.io
 
 Once installed, you will need to create an Issuer or ClusterIssuer (ClusterIssuer if you don't want namespacing for the Issuer).
 Here is a redacted example of using Route53 to solve the DNS challenges:
@@ -118,3 +91,11 @@ spec:
 ```
 
 Lots more info [here](https://cert-manager.io/docs/configuration/acme/dns01/route53)
+
+## Kube State Metrics
+
+From their docs: "kube-state-metrics is a simple service that listens to the Kubernetes API server and generates metrics about the state of the objects. It is not focused on the health of the individual Kubernetes components, but rather on the health of the various objects inside, such as deployments, nodes and pods."
+
+This provides some basic etcd metrics and lots of k8s stuff so folks can setup alerts any way they want. Note that this is just an easy starting point and we'll likely want to provider other/more metrics later on depending on client needs.
+
+Chart location: https://prometheus-community.github.io/helm-charts

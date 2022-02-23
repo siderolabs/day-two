@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"day-two/pkg/config"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,9 +16,6 @@ import (
 )
 
 func main() {
-	// define our program that creates our pulumi resources.
-	// we refer to this style as "inline" pulumi programs where both program + automation can be compiled in the same
-	// binary. no need for separate projects.
 	deployFunc := func(ctx *pulumi.Context) error {
 		// Get PWD so we have full path to values files. Seems to fail with relative :shrugs:
 		path, err := os.Getwd()
@@ -25,70 +23,34 @@ func main() {
 			return err
 		}
 
-		_, err = helm.NewRelease(ctx, "loki", &helm.ReleaseArgs{
-			Chart:           pulumi.String("loki-stack"),
-			CreateNamespace: pulumi.BoolPtr(true),
-			Namespace:       pulumi.String("loki"),
-			RepositoryOpts: &helm.RepositoryOptsArgs{
-				Repo: pulumi.String("https://grafana.github.io/helm-charts"),
-			},
-			ValueYamlFiles: pulumi.AssetOrArchiveArray{
-				pulumi.NewFileAsset(filepath.Join(path, "loki/values.yaml")),
-			},
-		})
+		chartList, err := config.LoadConfig(filepath.Join(path, "config/config.yaml"))
 		if err != nil {
 			return err
 		}
 
-		metallb, err := helm.NewRelease(ctx, "metallb", &helm.ReleaseArgs{
-			Chart:           pulumi.String("metallb"),
-			CreateNamespace: pulumi.BoolPtr(true),
-			Namespace:       pulumi.String("metallb"),
-			RepositoryOpts: &helm.RepositoryOptsArgs{
-				Repo: pulumi.String("https://metallb.github.io/metallb"),
-			},
-			ValueYamlFiles: pulumi.AssetOrArchiveArray{
-				pulumi.NewFileAsset(filepath.Join(path, "metallb/values.yaml")),
-			},
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = helm.NewRelease(
-			ctx,
-			"ingress-nginx",
-			&helm.ReleaseArgs{
-				Chart:           pulumi.String("ingress-nginx"),
+		for _, chart := range chartList.Charts {
+			releaseArgs := &helm.ReleaseArgs{
+				Chart:           pulumi.String(chart.Chart),
 				CreateNamespace: pulumi.BoolPtr(true),
-				Namespace:       pulumi.String("ingress"),
+				Namespace:       pulumi.String(chart.Namespace),
 				RepositoryOpts: &helm.RepositoryOptsArgs{
-					Repo: pulumi.String("https://kubernetes.github.io/ingress-nginx"),
+					Repo: pulumi.String(chart.Repo),
 				},
-			},
-			pulumi.DependsOn([]pulumi.Resource{metallb}),
-		)
-		if err != nil {
-			return err
-		}
+			}
 
-		_, err = helm.NewRelease(
-			ctx,
-			"cert-manager",
-			&helm.ReleaseArgs{
-				Chart:           pulumi.String("cert-manager"),
-				CreateNamespace: pulumi.BoolPtr(true),
-				Namespace:       pulumi.String("cert-manager"),
-				RepositoryOpts: &helm.RepositoryOptsArgs{
-					Repo: pulumi.String("https://charts.jetstack.io"),
-				},
-				ValueYamlFiles: pulumi.AssetOrArchiveArray{
-					pulumi.NewFileAsset(filepath.Join(path, "cert-manager/values.yaml")),
-				},
-			},
-		)
-		if err != nil {
-			return err
+			if chart.ValuesPath != "" {
+				releaseArgs.ValueYamlFiles = pulumi.AssetOrArchiveArray{
+					pulumi.NewFileAsset(
+						filepath.Join(path, chart.ValuesPath),
+					),
+				}
+			}
+
+			// TODO support dependencies if needed
+			_, err = helm.NewRelease(ctx, chart.Name, releaseArgs)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
@@ -111,7 +73,6 @@ func main() {
 	// Setup a passphrase secrets provider and use an environment variable to pass in the passphrase.
 	secretsProvider := auto.SecretsProvider("passphrase")
 	envvars := auto.EnvVars(map[string]string{
-		// In a real program, you would feed in the password securely or via the actual environment.
 		"PULUMI_CONFIG_PASSPHRASE": "password",
 	})
 
