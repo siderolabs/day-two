@@ -16,15 +16,15 @@ charts:
     chart: metallb
     valuesPath: "metallb/values.yaml"
 
+  - name: cert-manager
+    namespace: cert-manager
+    repo: https://charts.jetstack.io
+    chart: cert-manager
+    valuesPath: "cert-manager/values.yaml"
+
   - name: ingress-nginx
     namespace: ingress
     repo: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
     depends:
       - metallb # these are currently unsupported, but this works anyways b/c pulumi waits long enough for everything to be ready
-
-  - name: cert-manager
-    namespace: cert-manager
-    repo: https://charts.jetstack.io
-    chart: cert-manager
-    valuesPath: "cert-manager/values.yaml"
