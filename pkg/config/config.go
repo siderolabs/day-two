@@ -7,11 +7,10 @@ import (
 )
 
 type ChartList struct {
-	Charts []Chart `yaml:"charts"`
+	Charts map[string]Chart `yaml:"charts"`
 }
 
 type Chart struct {
-	Name         string   `yaml:"name"`
 	Namespace    string   `yaml:"namespace"`
 	Repo         string   `yaml:"repo"`
 	Chart        string   `yaml:"chart"`
