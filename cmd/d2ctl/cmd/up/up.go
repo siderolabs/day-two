@@ -1,3 +1,4 @@
+// Package up contains the commands for upping a stack.
 package up
 
 import (
@@ -6,13 +7,12 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
 	"github.com/talos-systems/day-two/cmd/d2ctl/cmd"
 	"github.com/talos-systems/day-two/pkg/pulumi"
 )
 
-var (
-	configPath string
-)
+var configPath string
 
 func init() {
 	cmd.RootCmd.AddCommand(upCmd)

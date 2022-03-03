@@ -1,3 +1,4 @@
+// Package pulumi contains functions for creating the day-two stack.
 package pulumi
 
 import (
@@ -16,6 +17,7 @@ import (
 	"github.com/talos-systems/day-two/pkg/config"
 )
 
+// Up creates a pulumi stack.
 func Up(ctx context.Context, configPath string) error {
 	projectName := "day-two"
 	stackName := "day-two"
@@ -85,6 +87,7 @@ func Up(ctx context.Context, configPath string) error {
 	return nil
 }
 
+//nolint:gocognit
 func deployCharts(configPath string) pulumi.RunFunc {
 	return func(ctx *pulumi.Context) error {
 		charts, err := config.LoadConfig(configPath)
@@ -98,7 +101,6 @@ func deployCharts(configPath string) pulumi.RunFunc {
 
 		for len(charts.Charts) > 0 {
 			for name, chart := range charts.Charts {
-
 				depList := []pulumi.Resource{}
 
 				missingDeps := false
@@ -109,6 +111,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 						fmt.Printf("chart %s missing dependency %s, skipping for now\n", name, dep)
 
 						missingDeps = true
+
 						break
 					}
 
@@ -117,6 +120,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 
 				if missingDeps {
 					dependencyAttempts++
+
 					continue
 				}
 
