@@ -28,3 +28,9 @@ charts:
     chart: ingress-nginx
     depends:
       - metallb
+
+  fluent-bit:
+    namespace: kube-system
+    repo: https://fluent.github.io/helm-charts
+    chart: fluent-bit
+    valuesPath: "/home/rsmitty/Workspace/TalosRepos/day-two/hack/examples/fluent-bit/values.yaml"

@@ -123,6 +123,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 				releaseArgs := &helm.ReleaseArgs{
 					Chart:           pulumi.String(chart.Chart),
 					CreateNamespace: pulumi.BoolPtr(true),
+					Name:            pulumi.StringPtr(name),
 					Namespace:       pulumi.String(chart.Namespace),
 					RepositoryOpts: &helm.RepositoryOptsArgs{
 						Repo: pulumi.String(chart.Repo),
