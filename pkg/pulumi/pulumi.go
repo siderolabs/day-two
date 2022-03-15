@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	helm "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/helm/v3"
@@ -139,8 +140,13 @@ func deployCharts(configPath string) pulumi.RunFunc {
 				}
 
 				if chart.ValuesPath != "" {
+					valuesPath, err := filepath.Abs(chart.ValuesPath)
+					if err != nil {
+						return err
+					}
+
 					releaseArgs.ValueYamlFiles = pulumi.AssetOrArchiveArray{
-						pulumi.NewFileAsset(chart.ValuesPath),
+						pulumi.NewFileAsset(valuesPath),
 					}
 				}
 
