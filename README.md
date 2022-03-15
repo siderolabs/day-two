@@ -1,12 +1,21 @@
 # day-two
-This repo will hold templates and guides for our day 2 stack. We'll see if it's worth keeping in here or if notion is good enough later.
+This repo will hold templates and guides for our day 2 stack.
+These will be things that we are willing to support directly as part of a support contract and will likely get deployed as part of an initial engagement.
 
 This guide details manual deployment in-line here, but we also have a Pulumi script that does this.
-You can simply run `go run main.go` to deploy all the things
+You can simply run `d2ctl up` to deploy all the things.
+This is intended to be a "fire and forget" type of tool, where we deploy these into a customer's Talos cluster as part of a PS engagement and later management is done by the customer directly via Helm.
 
 ## TL;DR
 
-To get things installed, you should edit `config/config.yaml`, then run `go run main.go`.
+To get things installed, you should copy and edit `/hack/examples/config/config.yaml`, then run `d2ctl up --config-path /path/to/config.yaml`.
+In that config file, you can specify each chart you want to deploy, comment out others, etc..
+I've tried to include configs that work out of the box on QEMU-based Talos clusters.
+
+## Building
+
+You can build `d2ctl` with a quick `make d2ctl` from this repo.
+The resulting binaries will be in `_out`.
 
 ## Monitoring and Logging
 
@@ -44,6 +53,7 @@ By default, this will create an ingress service of type LoadBalancer (thus has s
 ### Notes and TODOs
 
 - Document how to hook this into cert-manager
+
 ## SSL Certificates
 
 For generating certs that can be used with Kubernetes applications, we recommend `cert-manager`.

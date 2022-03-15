@@ -3,7 +3,7 @@ charts:
     namespace: loki
     repo: https://grafana.github.io/helm-charts
     chart: loki-stack
-    valuesPath: "/home/rsmitty/Workspace/TalosRepos/day-two/hack/examples/loki/values.yaml"
+    valuesPath: "/full/path/to/loki/values.yaml"
 
   kube-state-metrics:
     namespace: kube-system
@@ -14,13 +14,13 @@ charts:
     namespace: cert-manager
     repo: https://charts.jetstack.io
     chart: cert-manager
-    valuesPath: "/home/rsmitty/Workspace/TalosRepos/day-two/hack/examples/cert-manager/values.yaml"
+    valuesPath: "/full/path/to/cert-manager/values.yaml"
 
   metallb:
     namespace: metallb
     repo: https://metallb.github.io/metallb
     chart: metallb
-    valuesPath: "/home/rsmitty/Workspace/TalosRepos/day-two/hack/examples/metallb/values.yaml"
+    valuesPath: "/full/path/to/metallb/values.yaml"
 
   ingress-nginx:
     namespace: ingress
@@ -33,4 +33,4 @@ charts:
     namespace: kube-system
     repo: https://fluent.github.io/helm-charts
     chart: fluent-bit
-    valuesPath: "/home/rsmitty/Workspace/TalosRepos/day-two/hack/examples/fluent-bit/values.yaml"
+    valuesPath: "/full/path/to/fluent-bit/values.yaml"
