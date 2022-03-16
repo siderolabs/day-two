@@ -1,3 +1,8 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// Package pulumi provides the pulumi interface for d2ctl
 package pulumi
 
 import (
@@ -16,6 +21,7 @@ import (
 	"github.com/talos-systems/day-two/pkg/config"
 )
 
+// Up creates or updates the chart resources from the config file.
 func Up(ctx context.Context, configPath string) error {
 	projectName := "day-two"
 	stackName := "day-two"
@@ -85,6 +91,7 @@ func Up(ctx context.Context, configPath string) error {
 	return nil
 }
 
+//nolint:gocognit
 func deployCharts(configPath string) pulumi.RunFunc {
 	return func(ctx *pulumi.Context) error {
 		charts, err := config.LoadConfig(configPath)
@@ -98,7 +105,6 @@ func deployCharts(configPath string) pulumi.RunFunc {
 
 		for len(charts.Charts) > 0 {
 			for name, chart := range charts.Charts {
-
 				depList := []pulumi.Resource{}
 
 				missingDeps := false
@@ -109,6 +115,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 						fmt.Printf("chart %s missing dependency %s, skipping for now\n", name, dep)
 
 						missingDeps = true
+
 						break
 					}
 
@@ -117,6 +124,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 
 				if missingDeps {
 					dependencyAttempts++
+
 					continue
 				}
 
