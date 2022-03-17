@@ -32,9 +32,9 @@ func init() {
 var upCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Setup helm charts",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cobraCmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		return pulumi.Up(ctx, configPath)
+		return pulumi.Up(ctx, configPath, cmd.StatePath)
 	},
 }
