@@ -23,16 +23,21 @@ import (
 )
 
 // Up creates or updates the chart resources from the config file.
-func Up(ctx context.Context, configPath string) error {
+func Up(ctx context.Context, configPath, statePath string) error {
 	projectName := "day-two"
 	stackName := "day-two"
+
+	err := ensureStateDirExists(statePath)
+	if err != nil {
+		return err
+	}
 
 	// Specify a local backend instead of using the service.
 	project := auto.Project(workspace.Project{
 		Name:    tokens.PackageName(projectName),
 		Runtime: workspace.NewProjectRuntimeInfo("go", nil),
 		Backend: &workspace.ProjectBackend{
-			URL: "file://~/.pulumi-local",
+			URL: "file://" + statePath,
 		},
 	})
 
@@ -169,4 +174,32 @@ func deployCharts(configPath string) pulumi.RunFunc {
 
 		return nil
 	}
+}
+
+func ensureStateDirExists(statePath string) error {
+	// Ensure path exists (create it if not)
+	absStatePath, err := filepath.Abs(statePath)
+	if err != nil {
+		return err
+	}
+
+	info, err := os.Stat(absStatePath)
+	if err != nil && os.IsNotExist(err) {
+		err = os.MkdirAll(absStatePath, os.FileMode(0o700))
+		if err != nil {
+			return err
+		}
+
+		info, err = os.Stat(absStatePath)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		return fmt.Errorf("state-path '%s' is not a directory", absStatePath)
+	}
+
+	return nil
 }
