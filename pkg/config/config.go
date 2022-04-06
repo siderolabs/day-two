@@ -18,11 +18,12 @@ type ChartList struct {
 
 // Chart holds the Helm chart information to deploy.
 type Chart struct {
-	Namespace    string   `yaml:"namespace"`
-	Repo         string   `yaml:"repo"`
-	Chart        string   `yaml:"chart"`
-	ValuesPath   string   `yaml:"valuesPath"`
-	Dependencies []string `yaml:"depends"`
+	Namespace        string   `yaml:"namespace"`
+	PodSecurityLevel string   `yaml:"podSecurityLevel"`
+	Repo             string   `yaml:"repo"`
+	Chart            string   `yaml:"chart"`
+	ValuesPath       string   `yaml:"valuesPath"`
+	Dependencies     []string `yaml:"depends"`
 }
 
 // LoadConfig loads the configuration yaml file from a path.

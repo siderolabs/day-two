@@ -2,16 +2,16 @@
 
 # THIS FILE WAS AUTOMATICALLY GENERATED, PLEASE DO NOT EDIT.
 #
-# Generated on 2022-03-02T14:33:20Z by kres latest.
+# Generated on 2022-04-06T18:21:50Z by kres 8bc4139-dirty.
 
 ARG TOOLCHAIN
 
 # cleaned up specs and compiled versions
 FROM scratch AS generate
 
-FROM ghcr.io/talos-systems/ca-certificates:v0.3.0-12-g90722c3 AS image-ca-certificates
+FROM ghcr.io/siderolabs/ca-certificates:v1.0.0 AS image-ca-certificates
 
-FROM ghcr.io/talos-systems/fhs:v0.3.0-12-g90722c3 AS image-fhs
+FROM ghcr.io/siderolabs/fhs:v1.0.0 AS image-fhs
 
 # runs markdownlint
 FROM node:14.8.0-alpine AS lint-markdown
@@ -19,6 +19,7 @@ RUN npm i -g markdownlint-cli@0.23.2
 RUN npm i sentences-per-line@0.2.1
 WORKDIR /src
 COPY .markdownlint.json .
+COPY ./CHANGELOG.md ./CHANGELOG.md
 COPY ./README.md ./README.md
 RUN markdownlint --ignore "CHANGELOG.md" --ignore "**/node_modules/**" --ignore '**/hack/chglog/**' --rules /node_modules/sentences-per-line/index.js .
 
@@ -88,6 +89,6 @@ ARG TARGETARCH
 COPY --from=d2ctl d2ctl-linux-${TARGETARCH} /d2ctl
 COPY --from=image-fhs / /
 COPY --from=image-ca-certificates / /
-LABEL org.opencontainers.image.source https://github.com/talos-systems/day-two
+LABEL org.opencontainers.image.source https://github.com/siderolabs/day-two
 ENTRYPOINT ["/d2ctl"]
 

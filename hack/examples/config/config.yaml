@@ -1,6 +1,7 @@
 charts:
   loki:
     namespace: loki
+    podSecurityLevel: privileged
     repo: https://grafana.github.io/helm-charts
     chart: loki-stack
     valuesPath: "/full/path/to/loki/values.yaml"
@@ -18,6 +19,7 @@ charts:
 
   metallb:
     namespace: metallb
+    podSecurityLevel: privileged
     repo: https://metallb.github.io/metallb
     chart: metallb
     valuesPath: "/full/path/to/metallb/values.yaml"

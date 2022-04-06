@@ -12,7 +12,9 @@ import (
 	"path/filepath"
 	"time"
 
+	corev1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/core/v1"
 	helm "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/helm/v3"
+	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v3/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto"
 	"github.com/pulumi/pulumi/sdk/v3/go/auto/optup"
 	"github.com/pulumi/pulumi/sdk/v3/go/common/tokens"
@@ -106,6 +108,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 		}
 
 		deployedCharts := map[string]*helm.Release{}
+		namespaces := map[string]*corev1.Namespace{}
 
 		dependencyAttempts := 0
 
@@ -134,18 +137,46 @@ func deployCharts(configPath string) pulumi.RunFunc {
 					continue
 				}
 
+				var (
+					namespace *corev1.Namespace
+					ok        bool
+				)
+
+				if namespace, ok = namespaces[chart.Namespace]; !ok {
+					var labels pulumi.StringMap
+
+					if chart.PodSecurityLevel != "" {
+						labels = pulumi.StringMap{
+							"pod-security.kubernetes.io/enforce": pulumi.String(chart.PodSecurityLevel),
+						}
+					}
+
+					namespace, err = corev1.NewNamespace(ctx, chart.Namespace, &corev1.NamespaceArgs{
+						Metadata: &metav1.ObjectMetaArgs{
+							Name:   pulumi.String(chart.Namespace),
+							Labels: labels,
+						},
+					})
+					if err != nil {
+						return err
+					}
+
+					namespaces[chart.Namespace] = namespace
+				}
+
 				releaseArgs := &helm.ReleaseArgs{
-					Chart:           pulumi.String(chart.Chart),
-					CreateNamespace: pulumi.BoolPtr(true),
-					Name:            pulumi.StringPtr(name),
-					Namespace:       pulumi.String(chart.Namespace),
+					Chart:     pulumi.String(chart.Chart),
+					Name:      pulumi.StringPtr(name),
+					Namespace: namespace.Metadata.Name(),
 					RepositoryOpts: &helm.RepositoryOptsArgs{
 						Repo: pulumi.String(chart.Repo),
 					},
 				}
 
 				if chart.ValuesPath != "" {
-					valuesPath, err := filepath.Abs(chart.ValuesPath)
+					var valuesPath string
+
+					valuesPath, err = filepath.Abs(chart.ValuesPath)
 					if err != nil {
 						return err
 					}
@@ -155,7 +186,7 @@ func deployCharts(configPath string) pulumi.RunFunc {
 					}
 				}
 
-				helmPtr, err := helm.NewRelease(ctx, name, releaseArgs, pulumi.DependsOn(depList))
+				helmPtr, err := helm.NewRelease(ctx, name, releaseArgs, pulumi.DependsOn(append(depList, namespace)))
 				if err != nil {
 					return err
 				}
